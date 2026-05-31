@@ -5,11 +5,12 @@ import java.io.IOException;
 
 
 public class lab6 {
+    static int BYTESPERLINE = 4;
 
-    public static int getIndex(int addr, int indexWidth) {
-        // right shift by 2 for byte offset
+    public static int getIndex(int addr, int indexWidth, int blocks) {
+        // right shift by 2 for byte offset, plus any block offset
         // then bitmask
-        return (addr >>> 2) & (int) (Math.pow(2, indexWidth) - 1);
+        return (addr >>> (int) (2 + Math.log(blocks)/Math.log(2))) & (int) (Math.pow(2, indexWidth) - 1);
     }
 
     public static int getTag(int addr, int tagWidth) {
@@ -22,9 +23,7 @@ public class lab6 {
     }
 
     public static void main(String[] args) throws IOException {
-
         int hits = 0;
-        int misses = 0;
         int total = 0;
 
         ArrayList<Integer> cache = new ArrayList<>();               // cache
@@ -41,13 +40,49 @@ public class lab6 {
             String line;
             while ((line = br.readLine())!=null) {
                 int addr = getAddr(line);
-                int idx = getIndex(addr, indexWidth);
+                int idx = getIndex(addr, indexWidth, 1);
                 int tag = getTag(addr, tagWidth);
                 if (valid.get(idx) ==1 && cache.get(idx) == tag) {
                     hits++;
                     total++;
                 } else {
-                    misses++;
+                    total++;
+                    cache.set(idx, tag);
+                    valid.set(idx, 1);
+                }
+            }
+        }
+        // Cache #1
+        // Cache size: 2048B	Associativity: 1	Block size: 1
+        // Hits: 4028929	Hit Rate: 80.58%
+        // ---------------------------
+        System.out.println("Cache #1");
+        System.out.println("Cache size: " + cacheLines * BYTESPERLINE + "B\tAssociativity: 1" + "\tBlock size: 1");
+        System.out.printf("Hits: %d\tHit Rate: %.2f%%%n", hits, ((double) hits / total) * 100);
+
+        indexWidth = 8;
+        tagWidth = 21;
+        cacheLines = 256;
+        hits = 0;
+        total = 0;
+        int blocks = 2;
+
+        cache.clear();
+        valid.clear();
+        for (int i = 0; i < cacheLines; i++) {                      // initialize to all 0's
+            valid.add(0);
+            cache.add(0);
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(args[0]))) {
+            String line;
+            while ((line = br.readLine())!=null) {
+                int addr = getAddr(line);
+                int idx = getIndex(addr, indexWidth, blocks);
+                int tag = getTag(addr, tagWidth);
+                if (valid.get(idx) ==1 && cache.get(idx) == tag) {
+                    hits++;
+                    total++;
+                } else {
                     total++;
                     cache.set(idx, tag);
                     valid.set(idx, 1);
@@ -55,8 +90,87 @@ public class lab6 {
             }
         }
 
+        // Cache #2
+        // Cache size: 2048B	Associativity: 1	Block size: 2
+        // Hits: 4025132	Hit Rate: 80.50%
+        // ---------------------------
+        System.out.println("Cache #2");
+        System.out.println("Cache size: " + blocks * cacheLines * BYTESPERLINE + "B\tAssociativity: 1" + "\tBlock size: " + blocks);
+        System.out.printf("Hits: %d\tHit Rate: %.2f%%%n", hits, ((double) hits / total) * 100);
+
+        indexWidth = 7;
+        tagWidth = 21;
+        cacheLines = 128;
+        hits = 0;
+        total = 0;
+        blocks = 4;
+
+        cache.clear();
+        valid.clear();
+        for (int i = 0; i < cacheLines; i++) {                      // initialize to all 0's
+            valid.add(0);
+            cache.add(0);
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(args[0]))) {
+            String line;
+            while ((line = br.readLine())!=null) {
+                int addr = getAddr(line);
+                int idx = getIndex(addr, indexWidth, blocks);
+                int tag = getTag(addr, tagWidth);
+                if (valid.get(idx) ==1 && cache.get(idx) == tag) {
+                    hits++;
+                    total++;
+                } else {
+                    total++;
+                    cache.set(idx, tag);
+                    valid.set(idx, 1);
+                }
+            }
+        }
+        // Cache #3
+        // Cache size: 2048B	Associativity: 1	Block size: 4
+        // Hits: 4129379	Hit Rate: 82.59%
+        // ---------------------------
+        System.out.println("Cache #3");
+        System.out.println("Cache size: " + blocks * cacheLines * BYTESPERLINE + "B\tAssociativity: 1" + "\tBlock size: " + blocks);
+        System.out.printf("Hits: %d\tHit Rate: %.2f%%%n", hits, ((double) hits / total) * 100);
 
 
+        indexWidth = 10;
+        tagWidth = 20;
+        cacheLines = 1024;
+        hits = 0;
+        total = 0;
+        blocks = 1;
 
+        cache.clear();
+        valid.clear();
+        for (int i = 0; i < cacheLines; i++) {                      // initialize to all 0's
+            valid.add(0);
+            cache.add(0);
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(args[0]))) {
+            String line;
+            while ((line = br.readLine())!=null) {
+                int addr = getAddr(line);
+                int idx = getIndex(addr, indexWidth, blocks);
+                int tag = getTag(addr, tagWidth);
+                if (valid.get(idx) ==1 && cache.get(idx) == tag) {
+                    hits++;
+                    total++;
+                } else {
+                    total++;
+                    cache.set(idx, tag);
+                    valid.set(idx, 1);
+                }
+            }
+        }
+        // Cache #7
+        // Cache size: 4096B	Associativity: 1	Block size: 1
+        // Hits: 4278036	Hit Rate: 85.56%
+        // ---------------------------
+        System.out.println("Cache #7");
+        System.out.println("Cache size: " + blocks * cacheLines * BYTESPERLINE + "B\tAssociativity: 1" + "\tBlock size: " + blocks);
+        System.out.printf("Hits: %d\tHit Rate: %.2f%%%n", hits, ((double) hits / total) * 100);
     }
 }
